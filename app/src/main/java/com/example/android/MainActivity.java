@@ -4,19 +4,29 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.example.android.Model.CustomerModel;
+import com.example.android.Model.DataBaseHelper;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     Button btnViewAll,btnAdd;
     EditText etName,etAge;
     CheckBox isActive;
+    ListView lvCustomerList;
+    ArrayAdapter customerArrayAdapter;
+    DataBaseHelper dataBaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,16 +38,56 @@ public class MainActivity extends AppCompatActivity {
         etName = findViewById(R.id.et_Name);
         etAge = findViewById(R.id.et_Age);
         isActive = findViewById(R.id.cb_Customer);
+        lvCustomerList = findViewById(R.id.lv_Data);
+        GetAllData();
 
         btnViewAll.setOnClickListener((view)->{
-            Toast.makeText(this, "Hello World View All", Toast.LENGTH_SHORT).show();
-
-            CustomerModel customerModel = new CustomerModel(-1,etName.getText().toString(),
-                    Integer.parseInt(etAge.getText().toString()),isActive.isChecked());
+            GetAllData();
         });
 
-        btnAdd.setOnClickListener((view)->{
-            Toast.makeText(this, "Hello World Add", Toast.LENGTH_SHORT).show();
+        btnAdd.setOnClickListener((view) -> {
+            CustomerModel customerModel;
+            try {
+                customerModel = new CustomerModel(-1,etName.getText().toString(),
+                        Integer.parseInt(etAge.getText().toString()),isActive.isChecked());
+                Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
+                // Initialize the DatabaseHelper Class
+                DataBaseHelper dataBaseHelper = new DataBaseHelper(MainActivity.this);
+                // adds the customerModel properties to the database
+                boolean success = dataBaseHelper.AddCustomer(customerModel);
+                Toast.makeText(this, "Is Success: " + success, Toast.LENGTH_SHORT).show();
+
+            }catch (Exception e){
+                Toast.makeText(this, "Empty Fields: "+ e, Toast.LENGTH_SHORT).show();
+                // Default value for the failed query
+                customerModel = new CustomerModel(-1,"Error", 0 ,false);
+                Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
+            }
+
+            GetAllData();
         });
+
+        lvCustomerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // cast to Customer Model
+                CustomerModel selectedCustomer =(CustomerModel) adapterView.getItemAtPosition(position);
+                dataBaseHelper.DeleteCustomer(selectedCustomer);
+                GetAllData();
+                Toast.makeText(MainActivity.this, "Deleted: " + selectedCustomer.toString() , Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    // updates the List
+    public void GetAllData(){
+        dataBaseHelper = new DataBaseHelper(MainActivity.this);
+
+        List<CustomerModel> everyone = dataBaseHelper.GetAll();
+
+        customerArrayAdapter = new ArrayAdapter<CustomerModel>(MainActivity.this, android.R.layout.simple_list_item_1, dataBaseHelper.GetAll());
+
+        lvCustomerList.setAdapter(customerArrayAdapter);
     }
 }

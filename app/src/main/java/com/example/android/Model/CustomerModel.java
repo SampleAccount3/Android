@@ -22,4 +22,20 @@ public class CustomerModel {
                 ", isActiveCustomer=" + isActiveCustomer +
                 '}';
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public boolean isActiveCustomer() {
+        return isActiveCustomer;
+    }
 }
