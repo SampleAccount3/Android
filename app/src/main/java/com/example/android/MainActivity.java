@@ -22,7 +22,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     Button btnViewAll,btnAdd;
-    EditText etName,etAge;
+    EditText etName,etAge,etSampleText;
     CheckBox isActive;
     ListView lvCustomerList;
     ArrayAdapter customerArrayAdapter;
@@ -37,19 +37,22 @@ public class MainActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btn_Add);
         etName = findViewById(R.id.et_Name);
         etAge = findViewById(R.id.et_Age);
+        etSampleText = findViewById(R.id.etSample);
         isActive = findViewById(R.id.cb_Customer);
         lvCustomerList = findViewById(R.id.lv_Data);
         GetAllData();
 
         btnViewAll.setOnClickListener((view)->{
             GetAllData();
+            Toast.makeText(this, "Gumana", Toast.LENGTH_SHORT).show();
         });
 
         btnAdd.setOnClickListener((view) -> {
             CustomerModel customerModel;
             try {
                 customerModel = new CustomerModel(-1,etName.getText().toString(),
-                        Integer.parseInt(etAge.getText().toString()),isActive.isChecked());
+                        etSampleText.getText().toString(), Integer.parseInt(etAge.getText().toString()),
+                        isActive.isChecked());
                 Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
                 // Initialize the DatabaseHelper Class
                 DataBaseHelper dataBaseHelper = new DataBaseHelper(MainActivity.this);
@@ -60,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             }catch (Exception e){
                 Toast.makeText(this, "Empty Fields: "+ e, Toast.LENGTH_SHORT).show();
                 // Default value for the failed query
-                customerModel = new CustomerModel(-1,"Error", 0 ,false);
+                customerModel = new CustomerModel(-1,"Error","Empty", 0 ,false);
                 Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
             }
 
