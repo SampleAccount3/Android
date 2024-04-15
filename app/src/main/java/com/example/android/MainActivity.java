@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 CustomerModel selectedCustomer =(CustomerModel) adapterView.getItemAtPosition(position);
                 dataBaseHelper.DeleteCustomer(selectedCustomer);
                 GetAllData();
-                Toast.makeText(MainActivity.this, "Deleted: " + selectedCustomer.toString() , Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Deleted: " + selectedCustomer.toString(), Toast.LENGTH_SHORT).show();
             }
         });
 

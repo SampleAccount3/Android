@@ -22,7 +22,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String CUSTOMER_SAMPLE_TEXT = "CUSTOMER_SAMPLE_TEXT";
     public static final int DB_VERSION = 11;
     private static final String CUSTOMER_INCOME = "CUSTOMER_INCOME" ;
-    private static final String DATE_CREATED = "DATE_CREATEDS";
+    private static final String DATE_CREATED = "DATE_CREATED";
 
     CustomerModel customerModel;
 
@@ -34,12 +34,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String dropTable = "DROP TABLE IF EXISTS " + CUSTOMER_TABLE;
-        db.execSQL(dropTable);
+        String dropTableStatement = "DROP TABLE IF EXISTS " + CUSTOMER_TABLE;
+        db.execSQL(dropTableStatement);
 
-        String createTableStatement = "CREATE TABLE " + CUSTOMER_TABLE + "(" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + CUSTOMER_NAME + " TEXT, " + CUSTOMER_AGE + " INT, "
-                + ACTIVE_CUSTOMER + " BOOL)";
+        String createTableStatement = "CREATE TABLE " + CUSTOMER_TABLE + "(" +
+                ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                CUSTOMER_NAME + " TEXT, " +
+                CUSTOMER_AGE + " INT, " +
+                ACTIVE_CUSTOMER + " BOOL, " +
+                CUSTOMER_SAMPLE_TEXT + " TEXT, " +
+                CUSTOMER_INCOME + " INTEGER, " +  // Add this line
+                DATE_CREATED + " TEXT)";
         db.execSQL(createTableStatement);
     }
 
@@ -59,23 +64,22 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        switch (oldVersion){
+        switch (oldVersion) {
             case 8:
-                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_SAMPLE_TEXT)) {
+                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_SAMPLE_TEXT))
                     db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + CUSTOMER_SAMPLE_TEXT + " TEXT");
-                }
             case 9:
-                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_INCOME)) {
+                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_INCOME))
                     db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + CUSTOMER_INCOME + " INTEGER");
-                }
             case 10:
-                if (!isColumnExists(db, CUSTOMER_TABLE, DATE_CREATED)) {
+                if (!isColumnExists(db, CUSTOMER_TABLE, DATE_CREATED))
                     db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + DATE_CREATED + " TEXT");
-                }
-                break;
+                case 11:
+            default:
+                onCreate(db);
         }
-
     }
+
 
     private boolean isColumnExists(SQLiteDatabase db, String tableName, String columnName) {
         Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
@@ -113,16 +117,41 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public boolean DeleteCustomer(CustomerModel customerModel){
         SQLiteDatabase db = this.getWritableDatabase();
-        String stringQuery = "DELETE FROM " + CUSTOMER_TABLE + " WHERE " + ID + " = " + customerModel.getId();
+        int rowsDeleted = db.delete(CUSTOMER_TABLE, ID + " = ?", new String[]{String.valueOf(customerModel.getId())});
+        db.close();
 
-        Cursor cursor = db.rawQuery(stringQuery, null);
-
-        if (cursor.moveToFirst()){
-            return true;
-        }else{
-            return false;
-        }
+        return rowsDeleted > 0;
     }
+
+//    public List<CustomerModel> GetAll(){
+//        List<CustomerModel> returnList = new ArrayList<>();
+//
+//        // get Data from the Database
+//
+//        String queryString = "SELECT * FROM " + CUSTOMER_TABLE + " ORDER BY ID DESC";
+//
+//        SQLiteDatabase db = this.getReadableDatabase();
+//
+//        Cursor cursor  = db.rawQuery(queryString,null);
+//
+//        if (cursor.moveToFirst()){
+//            do {
+//                int customerID = cursor.getInt(0);
+//                String customerName = cursor.getString(1);
+//                int customerAge = cursor.getInt(2);
+//                boolean customerActive = cursor.getInt(3) == 1? true : false;
+//                String sampleText =  cursor.getString(4);
+//                int customerIncome = cursor.getInt(5);
+//                String dateCreated = cursor.getString(6);
+//
+//                CustomerModel newCustomer = new CustomerModel(customerID, customerName, sampleText, customerAge, customerActive,customerIncome,dateCreated);
+//                returnList.add(newCustomer);
+//            }while(cursor.moveToNext());
+//        }else {}
+//        cursor.close();
+//        db.close();
+//        return returnList;
+//    }
 
     public List<CustomerModel> GetAll(){
         List<CustomerModel> returnList = new ArrayList<>();
@@ -153,5 +182,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
         return returnList;
     }
+
 
 }
