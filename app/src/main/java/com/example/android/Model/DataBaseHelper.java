@@ -20,18 +20,23 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String ACTIVE_CUSTOMER = "ACTIVE_CUSTOMER";
     public static final String ID = "ID";
     public static final String CUSTOMER_SAMPLE_TEXT = "CUSTOMER_SAMPLE_TEXT";
-    public static final int DB_VERSION = 5;
+    public static final int DB_VERSION = 11;
+    private static final String CUSTOMER_INCOME = "CUSTOMER_INCOME" ;
+    private static final String DATE_CREATED = "DATE_CREATEDS";
 
     CustomerModel customerModel;
 
     public DataBaseHelper(@Nullable Context context) {
-        super(context, "Customer.db", null, 8);
+        super(context, "Customer.db", null, DB_VERSION);
     }
     /**
     * This is called the first time a database is accessed.
     */
     @Override
     public void onCreate(SQLiteDatabase db) {
+        String dropTable = "DROP TABLE IF EXISTS " + CUSTOMER_TABLE;
+        db.execSQL(dropTable);
+
         String createTableStatement = "CREATE TABLE " + CUSTOMER_TABLE + "(" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + CUSTOMER_NAME + " TEXT, " + CUSTOMER_AGE + " INT, "
                 + ACTIVE_CUSTOMER + " BOOL)";
@@ -54,12 +59,22 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < DB_VERSION) {
-            if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_SAMPLE_TEXT)) {
-                String addColumnStatement = "ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + CUSTOMER_SAMPLE_TEXT + " TEXT";
-                db.execSQL(addColumnStatement);
-            }
+        switch (oldVersion){
+            case 8:
+                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_SAMPLE_TEXT)) {
+                    db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + CUSTOMER_SAMPLE_TEXT + " TEXT");
+                }
+            case 9:
+                if (!isColumnExists(db, CUSTOMER_TABLE, CUSTOMER_INCOME)) {
+                    db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + CUSTOMER_INCOME + " INTEGER");
+                }
+            case 10:
+                if (!isColumnExists(db, CUSTOMER_TABLE, DATE_CREATED)) {
+                    db.execSQL("ALTER TABLE " + CUSTOMER_TABLE + " ADD COLUMN " + DATE_CREATED + " TEXT");
+                }
+                break;
         }
+
     }
 
     private boolean isColumnExists(SQLiteDatabase db, String tableName, String columnName) {
@@ -83,6 +98,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         cv.put(CUSTOMER_AGE,customerModel.getAge());
         cv.put(ACTIVE_CUSTOMER,customerModel.isActiveCustomer());
         cv.put(CUSTOMER_SAMPLE_TEXT,customerModel.getSample());
+        cv.put(CUSTOMER_INCOME,customerModel.getIncome());
+        cv.put(DATE_CREATED,customerModel.getDateCreated());
 
         long insert = db.insert(CUSTOMER_TABLE, null, cv);
 
@@ -112,7 +129,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         // get Data from the Database
 
-        String queryString = "SELECT * FROM " + CUSTOMER_TABLE;
+        String queryString = "SELECT * FROM " + CUSTOMER_TABLE + " ORDER BY ID DESC";
 
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -125,8 +142,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 int customerAge = cursor.getInt(2);
                 boolean customerActive = cursor.getInt(3) == 1? true : false;
                 String sampleText =  cursor.getString(4);
+                int customerIncome = cursor.getInt(5);
+                String dateCreated = cursor.getString(6);
 
-                CustomerModel newCustomer = new CustomerModel(customerID, customerName, sampleText, customerAge, customerActive);
+                CustomerModel newCustomer = new CustomerModel(customerID, customerName, sampleText, customerAge, customerActive,customerIncome,dateCreated);
                 returnList.add(newCustomer);
             }while(cursor.moveToNext());
         }else {}

@@ -17,12 +17,14 @@ import android.widget.Toast;
 import com.example.android.Model.CustomerModel;
 import com.example.android.Model.DataBaseHelper;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     Button btnViewAll,btnAdd;
-    EditText etName,etAge,etSampleText;
+    EditText etName,etAge,etSampleText,etIncome,etDateCreated;
     CheckBox isActive;
     ListView lvCustomerList;
     ArrayAdapter customerArrayAdapter;
@@ -38,8 +40,12 @@ public class MainActivity extends AppCompatActivity {
         etName = findViewById(R.id.et_Name);
         etAge = findViewById(R.id.et_Age);
         etSampleText = findViewById(R.id.etSample);
+        etIncome = findViewById(R.id.et_Income);
+        etDateCreated = findViewById(R.id.et_DateCreated);
         isActive = findViewById(R.id.cb_Customer);
         lvCustomerList = findViewById(R.id.lv_Data);
+        etDateCreated.setText(DateFormat.getDateInstance().format(new Date()).toString());
+
         GetAllData();
 
         btnViewAll.setOnClickListener((view)->{
@@ -52,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 customerModel = new CustomerModel(-1,etName.getText().toString(),
                         etSampleText.getText().toString(), Integer.parseInt(etAge.getText().toString()),
-                        isActive.isChecked());
+                        isActive.isChecked(), Integer.parseInt(etIncome.getText().toString()),etDateCreated.getText().toString());
                 Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
                 // Initialize the DatabaseHelper Class
                 DataBaseHelper dataBaseHelper = new DataBaseHelper(MainActivity.this);
@@ -63,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
             }catch (Exception e){
                 Toast.makeText(this, "Empty Fields: "+ e, Toast.LENGTH_SHORT).show();
                 // Default value for the failed query
-                customerModel = new CustomerModel(-1,"Error","Empty", 0 ,false);
+                customerModel = new CustomerModel(-1,"Error","Empty", 0 ,false,0,"No Date");
+
                 Toast.makeText(this, customerModel.toString(), Toast.LENGTH_SHORT).show();
             }
 
@@ -86,11 +93,8 @@ public class MainActivity extends AppCompatActivity {
     // updates the List
     public void GetAllData(){
         dataBaseHelper = new DataBaseHelper(MainActivity.this);
-
         List<CustomerModel> everyone = dataBaseHelper.GetAll();
-
         customerArrayAdapter = new ArrayAdapter<CustomerModel>(MainActivity.this, android.R.layout.simple_list_item_1, dataBaseHelper.GetAll());
-
         lvCustomerList.setAdapter(customerArrayAdapter);
     }
 }
